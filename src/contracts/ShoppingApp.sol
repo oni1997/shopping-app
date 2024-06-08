@@ -57,9 +57,17 @@ contract ShoppingApp {
     }
 
     function buyItem(uint256 _itemId, address _token) public {
-        Item storage item = items[_itemId];
-        require(!item.sold, "Item is already sold");
+    Item storage item = items[_itemId];
+    require(!item.sold, "Item is already sold");
 
+    console.log("Buying Item:", _itemId);
+    console.log("Item Name:", item.name);
+    console.log("Item Price:", item.price);
+    console.log("Item Sold:", item.sold);
+    console.log("Buyer:", msg.sender);
+    console.log("Token Address:", _token);
+
+    try {
         if (_token == address(fzarToken)) {
             require(
                 fzarToken.transferFrom(msg.sender, item.owner, item.price),
@@ -73,12 +81,16 @@ contract ShoppingApp {
         } else {
             revert("Invalid token address");
         }
-
-        item.sold = true;
-        item.owner = msg.sender;
-        boughtItems[msg.sender].push(_itemId);
-        soldItems[item.owner].push(_itemId);
+    } catch Error(string memory reason) {
+        console.log("Error: ", reason);
+        revert(reason);
     }
+
+    item.sold = true;
+    item.owner = msg.sender;
+    boughtItems[msg.sender].push(_itemId);
+    soldItems[item.owner].push(_itemId);
+}
 
     function getBoughtItems(address _user)
         public
